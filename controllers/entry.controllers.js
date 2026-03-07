@@ -1,6 +1,8 @@
 const Entry = require('../models/entry.models')
 const User = require('../models/user.models')
 const Comment = require('../models/comment.models')
+const Notification = require('../models/notification.models')
+const Group = require('../models/group.models')
 
 const fetchEntries = async (req, res) =>{
     try{
@@ -64,6 +66,7 @@ const createEntry = async (req, res) =>{
         const {title, content} = req.body
         const author = req._id
         const user = await User.findById(author)
+        
         if(!user){
             return res.status(400).json({
                 status: 'FAILED',
@@ -74,6 +77,23 @@ const createEntry = async (req, res) =>{
        const updatedUser = await User.findByIdAndUpdate(author,
         {$inc: {balance: 7}},
     {new: true})
+
+    
+    const groupMembers = await User.find({ 
+        group: user.group, 
+        _id: { $ne: author } 
+      }).select('_id') 
+    
+      const notifications = groupMembers.map(member => ({
+        recipientId: member._id,
+        senderId: author,
+        type: "new_entry",
+        groupId: user.group,
+        read: false
+      }))
+      
+      await Notification.insertMany(notifications)
+      
         res.json({
             status: 'SUCCESS',
             message: 'Entry has been created! You earned 7 Buckaroos!',

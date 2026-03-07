@@ -9,6 +9,7 @@ const userRoutes = require('./routes/user.routes')
 const entryRoutes = require('./routes/entry.routes')
 const groupRoutes = require('./routes/group.routes')
 const commentRoutes = require('./routes/comment.routes')
+const notificationRoutes = require('./routes/notification.routes')
 
 const app=express()
 app.use(express.urlencoded({ extended: true }))
@@ -24,6 +25,7 @@ app.use('/uploads', express.static('uploads'))
 
 
 app.use('/users', userRoutes)
+app.use('/notifications', notificationRoutes)
 app.use('/groups', groupRoutes)
 app.use('/entries', entryRoutes)
 app.use('/comments', commentRoutes)

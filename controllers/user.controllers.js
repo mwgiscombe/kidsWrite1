@@ -1,5 +1,6 @@
 const User = require('../models/user.models')
 const Group = require('../models/group.models')
+const Notification= require('../models/notification.models')
 const Entry = require('../models/entry.models')
 const jwt = require('jsonwebtoken')
 const bcrypt= require('bcrypt')
@@ -94,6 +95,8 @@ const userDashboard = async (req, res) =>{
                 }
             ]
         })
+        const notifications = await Notification.find({ recipientId: req._id })
+        .populate('senderId', 'userName')
         const userEntries = user.entries.map(entry =>
             `<li>${entry.title}: 
                 <ul>
@@ -107,12 +110,21 @@ const userDashboard = async (req, res) =>{
                 </ul>
             </li>`
         )
+        const notificationList = notifications.length > 0
+            ? notifications.map(n =>
+                `<li>${n.senderId.userName} made a new entry</li>`
+            ).join('')
+            : '<li>No notifications</li>'
         const userGroup = user.group
+       
         res.send(`<h1>Welcome ${user.name}!</h1>
             <h4>Your Group: ${userGroup.name}</h4>
             ${userGroup.announce ? `Announcement: ${userGroup.announce}`  : ''}
             <h5>Current Balance: $${user.balance} Buckaroos</h5>
-            Your Entries:${userEntries}
+           <h5>🔔 Notifications: </h5> 
+           ${notificationList}
+           <h4> Your Entries:</h4>
+            ${userEntries}
             `)
 
     } catch(error){
