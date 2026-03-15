@@ -7,20 +7,22 @@ const Group = require('../models/group.models')
 const fetchEntries = async (req, res) =>{
     try{
         
-        const entries = await Entry.find().populate('author', 'name userName').populate('likes', 'name userName').populate({
-            path: 'comments',
-            select: 'content author createdAt',
-            populate:{
-                path: 'author',
-                select: 'name userName', 
-                 
-            },
-            populate:{
-                path: 'likes',
-                select: 'name userName'
-            }
-            
-        })
+        const entries = await Entry.find()
+  .populate({
+    path: 'author',
+    select: '_id name userName'
+  })
+  .populate({
+    path: 'likes',
+    select: 'name userName'
+  })
+  .populate({
+    path: 'comments',
+    populate: {
+      path: 'author',
+      select: 'userName profileImg'
+    }
+  });
         res.json({
             status: 'SUCCESS',
             data: entries
@@ -63,7 +65,7 @@ const searchEntries = async (req, res) =>{
 
 const createEntry = async (req, res) =>{
     try{
-        const {title, content} = req.body
+        const {title, content, public} = req.body
         const author = req._id
         const user = await User.findById(author)
         
@@ -73,7 +75,7 @@ const createEntry = async (req, res) =>{
                 message: 'User not found'
             })
         }
-        await Entry.create({title, content, author})
+        await Entry.create({title, content, author, public})
        const updatedUser = await User.findByIdAndUpdate(author,
         {$inc: {balance: 7}},
     {new: true})

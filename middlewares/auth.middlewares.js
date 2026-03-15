@@ -59,17 +59,34 @@ const isProfileOwner = (req, res, next) => {
     next()
 }
 
-const isGroupOwner = (req, res, next) => {
-    const token = req.cookies.groupToken
-    console.log(token)
-    const {_id} = jwt.verify(token, process.env.JWT_SECRET_KEY)
-    if(_id != req.params.id){
-        return res.status(403).json({
-            status: 'FAILED',
-            message: 'You are not the owner of this group'
-        })
+const isGroupOwner = async (req, res, next) => {
+    try {
+        const token = req.cookies.groupToken
+        if (!token) {
+            return res.status(401).json({ message: "Group login required" })
+        }
+
+        const { _id: groupIdFromToken } = jwt.verify(token, process.env.JWT_SECRET_KEY)
+
+        // Are we acting on a GROUP resource or a USER resource?
+        const user = await User.findById(req.params.id)
+
+        if (user) {
+            // Deleting a user — check they belong to this group
+            if (String(user.group) !== String(groupIdFromToken)) {
+                return res.status(403).json({ message: "This user does not belong to your group" })
+            }
+        } else {
+            // Acting on a group resource — check token matches
+            if (String(groupIdFromToken) !== String(req.params.id)) {
+                return res.status(403).json({ message: "You are not the owner of this group" })
+            }
+        }
+
+        next()
+    } catch (err) {
+        return res.status(401).json({ message: "Invalid group token" })
     }
-    next()
 }
 
 const isEntryAuthor = async (req, res, next) =>{
@@ -129,4 +146,6 @@ const isCommentAuthor = async (req, res, next) =>{
      }
  
  }
+
+
 module.exports= {isAuthenticated, isGroupAuthenticated, isProfileOwner, isGroupOwner, isEntryAuthor, isCommentAuthor, isCommentOrEntryAuthor}

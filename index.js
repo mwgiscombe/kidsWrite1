@@ -24,11 +24,22 @@ app.use(cors({
 app.use('/uploads', express.static('uploads'))
 
 
+  
+  // Add AFTER all routes
+  
 app.use('/users', userRoutes)
 app.use('/notifications', notificationRoutes)
 app.use('/groups', groupRoutes)
 app.use('/entries', entryRoutes)
 app.use('/comments', commentRoutes)
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`, req.body)
+    next()
+  })
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err)
+    res.status(500).json({ message: err.message })
+  })
 app.get('/', (req, res)=>{
     res.send('i am a robot')
 })

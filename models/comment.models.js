@@ -11,7 +11,7 @@ const commentSchema = mongoose.Schema({
        content: {
         type: String,
         required: true,
-        minLength: 5
+       
     },
     author:{
         type: mongoose.Schema.Types.ObjectId,

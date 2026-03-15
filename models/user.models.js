@@ -1,22 +1,22 @@
 const mongoose = require('mongoose')
 const Group = require('./group.models')
 const Entry = require('./entry.models')
-
+const avatarRando = Math.floor(Math.random() * 22) + 1;
 const userSchema = mongoose.Schema({
     name:  {
         type: String,
         required: true,
-        minLength: 5
+        minLength: 2
     },
     userName:{
         type: String,
         required: true,
-        minLength: 5,
+        minLength:3,
         unique: true
     },
     parentEmail: {
         type: String,
-        required: true,
+        
         
     },
     age: { 
@@ -41,7 +41,8 @@ const userSchema = mongoose.Schema({
         minLength: 20
     },
     profileImg:{
-        type: String
+        type: String,
+        default: `/src/assets/avatars/avatar%20(${avatarRando}).png`
     }
 },
     {

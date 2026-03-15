@@ -84,7 +84,10 @@ const groupDashboard = async (req, res) =>{
 
 const createGroup = async (req, res)=>{
     try{
-        const {name, email, password, confirm, spots}= req.body
+        console.log("BODY:", req.body);
+        console.log("FILE:", req.file);
+        const {name, email, password, spots}= req.body
+        const GroupImg = req.file ? req.file.path : null;
         function calculatePrice(spots){
             let pricePer = 0
             if(spots<10){
@@ -106,14 +109,16 @@ const createGroup = async (req, res)=>{
 
         }
         const price = calculatePrice(spots)
-        if(confirm != password){
-            return res.status(401).json({
-                status: 'FAILED',
-                message: 'Passwords do not match'
-            })
-        }
+        // if(confirm != password){
+        //     return res.status(401).json({
+        //         status: 'FAILED',
+        //         message: 'Passwords do not match'
+        //     })
+        // }
         const encryptedPassword = await bcrypt.hash(password, 10)
-        await Group.create({name, email, spots, password: encryptedPassword, price})
+        console.log("GroupImg value being saved:", GroupImg)
+        await Group.create({name, email, spots, password: encryptedPassword, price, GroupImg})
+       
    
         res.json({
             status: 'SUCCESS!',
@@ -132,7 +137,7 @@ const createGroup = async (req, res)=>{
 
 const loginGroup = async (req, res)=>{
     const {email, password} = req.body
-    const group = await Group.findOne({email})
+    const group = await Group.findOne({email}).populate('members', 'name userName age _id')
     if(!group){
         return res.status(404).json({
             status: 'failed',
@@ -148,7 +153,7 @@ const loginGroup = async (req, res)=>{
         })
     }
 
-    const {_id, name, spots}=group
+    const {_id, name, spots, GroupImg, enrolled, announce, members }=group
     const token = jwt.sign({_id}, process.env.JWT_SECRET_KEY, {expiresIn: 60*60})
     res.cookie('groupToken', token, {
         httpOnly: true,
@@ -157,7 +162,7 @@ const loginGroup = async (req, res)=>{
     return res.json({
         status: 'SUCCESS',
         message: `${group.name} is logged in`,
-        group:{_id,name, spots, email}
+        group:{_id,name, spots, email, GroupImg, enrolled, announce, members}
     })
 }
 
@@ -207,7 +212,7 @@ const logoutGroup = async (req, res) =>{
 const getCurrentGroup = async (req, res) =>{
   try{  
     
-    const group = await Group.findById(req._id)
+    const group = await Group.findById(req._id).populate('members', 'name userName profileImg _id')
     if(!group){
         return res.status(404).json({
             status: 'failed',
@@ -229,8 +234,8 @@ const getCurrentGroup = async (req, res) =>{
 const updateGroup = async (req, res) =>{
     try{
         const {id} = req.params
-        const {name} = req.body
-        await Group.findByIdAndUpdate(id, {name})
+        const updates = req.body
+        await Group.findByIdAndUpdate(id, updates)
         res.json({
             status: 'SUCCESS',
             message: 'Group has been updated!'

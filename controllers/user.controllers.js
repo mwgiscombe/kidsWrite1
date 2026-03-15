@@ -40,6 +40,49 @@ const fetchUsers = async (req, res) =>{
     }
 }
 
+const fetchUser = async (req, res) =>{
+    try{
+const user = await User.findById(req.params.id).populate({
+    path: 'entries',
+    select: 'title content comments likes',
+    populate: [
+      {path: 'comments',
+          select: 'author content',
+      populate:{path:'author',
+          select: 'userName profileImg'
+      }},
+      {path: 'likes',
+          select: 'userName profileImg'
+
+      }
+    ]
+  }).populate({
+      path: "group",
+      populate: {
+        path: "members",
+        model: "User"
+      }
+    })
+  if(!user){
+      return res.status(404).json({
+          status: 'FAILED',
+          message: 'User not found'
+      })
+  }
+  res.json({
+      status: 'SUCCESS',
+      user
+  })
+
+}catch(error){
+  return res.status(500).json({
+      status: 'FAILED',
+      message: 'Seomthing went wrong in the server'
+  })
+  
+}
+}
+
 const searchUsers = async (req, res) =>{
     try{
         const {search, parentEmail, group} = req.body
@@ -136,16 +179,104 @@ const userDashboard = async (req, res) =>{
     }
 }
 
+const UserPublicProfile = async (req, res) =>{
+    try{
+        const user = await User.findById(req.params.id).populate({
+            path: 'entries',
+            select: 'title content comments likes',
+            populate: [
+              {path: 'comments',
+                  select: 'author content',
+              populate:{path:'author',
+                  select: 'userName'
+              }},
+              {path: 'likes',
+                  select: 'userName',
+                  populate:{path:'userName'}
+  
+              }
+            ]
+          }).populate({
+              path: "group",
+              populate: {
+                path: "members",
+                model: "User"
+              }
+            })
+          if(!user){
+              return res.status(404).json({
+                  status: 'FAILED',
+                  message: 'User not found'
+              })
+          }
+          res.json({
+              status: 'SUCCESS',
+              user
+          })
+  
+      }catch(error){
+          return res.status(500).json({
+              status: 'FAILED',
+              message: 'Seomthing went wrong in the server'
+          })
+          
+      }
+}
+const getCurrentUser = async(req, res) =>{
+    try{
+        const user = await User.findById(req._id).select('-password')
+        .populate({
+          path: 'entries',
+          select: 'title content comments likes',
+          populate: [
+            {path: 'comments',
+                select: 'author content',
+            populate:{path:'author',
+                select: 'userName'
+            }},
+            {path: 'likes',
+                select: 'userName',
+                populate:{path:'userName'}
+
+            }
+          ]
+        }).populate({
+            path: "group",
+            populate: {
+              path: "members",
+              model: "User"
+            }
+          })
+        if(!user){
+            return res.status(404).json({
+                status: 'FAILED',
+                message: 'User not found'
+            })
+        }
+        res.json({
+            status: 'SUCCESS',
+            user
+        })
+
+    }catch(error){
+        return res.status(500).json({
+            status: 'FAILED',
+            message: 'Seomthing went wrong in the server'
+        })
+        
+    }
+}
+
 
 const createUser = async (req, res)=>{
     try{        
         const {name, userName, parentEmail, password, confirm, age, group, bio} = req.body
-        if(password != confirm){
-            return res.status(401).json({
-                status: 'FAILED',
-                message: 'Passwords do not match'
-            })
-        }
+        // if(password != confirm){
+        //     return res.status(401).json({
+        //         status: 'FAILED',
+        //         message: 'Passwords do not match'
+        //     })
+        // }
         const encryptedPassword = await bcrypt.hash(password, 10)
 
         const userData = {
@@ -164,15 +295,19 @@ const createUser = async (req, res)=>{
 
      
         const enrolledGroup = await Group.findById(group)
-        if(group){
-            
-            if(enrolledGroup.enrolled >= enrolledGroup.spots){
-                return res.status(401).json({
-                    status: 'FAILED',
-                    message: 'Sorry, this group is full'
-                })
-            }
+        if(!enrolledGroup){
+            return res.status(404).json({
+                status: 'FAILED',
+                message: 'Group not found'
+            })
         }
+
+       if(enrolledGroup.enrolled >= enrolledGroup.spots){
+    return res.status(401).json({
+        status: 'FAILED',
+        message: 'Sorry, this group is full'
+    })
+}
         
         await User.create(userData)
         enrolledGroup.enrolled +=1
@@ -198,8 +333,8 @@ const createUser = async (req, res)=>{
 const updateUser = async (req, res) =>{
     try{
         const {id} = req.params
-        const {name, parentEmail, age} = req.body
-        await User.findByIdAndUpdate(id, {name, parentEmail, age})
+        const {name, parentEmail, age, bio, userName, profileImg} = req.body
+        await User.findByIdAndUpdate(id, {name, parentEmail, age, bio, userName, profileImg})
         res.json({
             status: 'SUCCESS',
             message: 'User has been updated!'
@@ -213,6 +348,26 @@ const updateUser = async (req, res) =>{
     }
 }
 
+const updateGroupUser = async (req, res) =>{
+    try{
+        const {id} = req.params
+        const {name, parentEmail, age, bio, userName, profileImg, password} = req.body
+        const encryptedPassword = await bcrypt.hash(password, 10)
+        await User.findByIdAndUpdate(id, {name, parentEmail, age, bio, userName, profileImg, password: encryptedPassword})
+        res.json({
+            status: 'SUCCESS',
+            message: 'User has been updated!'
+        })
+
+    }catch(error){
+        res.status(500).json({
+            status: 'FAILED',
+            message: 'I cannot update!'
+        })
+    }
+}
+
+
 const loginUser = async (req, res) =>{
     console.log("BODY:", req.body)
     const {userName, password} = req.body
@@ -224,7 +379,10 @@ const loginUser = async (req, res) =>{
         })
     }
 
-    const doesPwdMatch = await bcrypt.compare(password, user.password)
+    let doesPwdMatch = await bcrypt.compare(password, user.password)
+    
+
+
     if(!doesPwdMatch){
         return res.status(401).json({
             status: 'FAILED',
@@ -237,7 +395,8 @@ const loginUser = async (req, res) =>{
     console.log(token)
     return res.json({
         status: 'SUCCESS',
-        message: 'You are logged in'
+        message: 'You are logged in',
+        user
     })
 }
 
@@ -290,26 +449,31 @@ const forgotPassword = async (req, res) => {
 }
 
 const deleteUser = async (req, res) => {
-   try{ 
-    const {id} = req.params
-    const user = await User.findById(id)
-    const enrolledGroup = await Group.findById(user.group)
-    enrolledGroup.enrolled -= 1
-    enrolledGroup.save()
+    try {
+        const { id } = req.params
+        const user = await User.findById(id)
 
-    await Entry.deleteMany({author:user})
-      
-    await User.findByIdAndDelete(id)
-    res.json({
-        status: 'SUCCESS',
-        message: 'User and user entries deleted'
-    })
-    }catch(error){
+        if (!user) {
+            return res.status(404).json({ message: "User not found" })
+        }
+
+        const group = await Group.findById(user.group)
+        if (group.enrolled > 0) {
+            group.enrolled -= 1
+            await group.save()
+        }
+
+        await User.findByIdAndDelete(id)
+
+        res.json({
+            status: "SUCCESS",
+            message: "User deleted"
+        })
+    } catch (error) {
         res.status(500).json({
-        status: 'FAILED',
-        message: 'They will not go away!',
-        error: error.message
-    })
+            status: "FAILED",
+            message: error.message
+        })
     }
 }
 const deleteAllUsers = async (req, res) => {
@@ -334,10 +498,14 @@ const deleteAllUsers = async (req, res) => {
 
 module.exports ={
     fetchUsers,
+    fetchUser,
     searchUsers,
     userDashboard,
     createUser,
     updateUser,
+    updateGroupUser,
+    getCurrentUser,
+    UserPublicProfile,
     loginUser,
     logoutUser,
     forgotPassword,

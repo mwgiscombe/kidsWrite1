@@ -30,6 +30,10 @@ const entrySchema = mongoose.Schema({
             ref: 'User'
         }
     ],
+    public:{
+        type: Boolean,
+        default: false
+    }
 },
 {
     timestamps: true

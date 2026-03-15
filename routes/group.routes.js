@@ -19,9 +19,9 @@ const {
 
 router.get('/', fetchGroups)
 router.post('/login', loginGroup)
-router.post('/logout', isAuthenticated, logoutGroup)
+router.post('/logout', isGroupAuthenticated, logoutGroup)
 router.post('/message', isGroupAuthenticated, groupMessage)
-router.get('/current-group', isAuthenticated, getCurrentGroup)
+router.get('/current-group', isGroupAuthenticated, getCurrentGroup)
 router.get('/search', searchGroups)
 router.get('/dashboard', isGroupAuthenticated, groupDashboard)
 router.post('/', upload.single('GroupImg'), createGroup)

@@ -6,6 +6,9 @@ const fetchComments = async (req, res) =>{
     try{
         const {entry} = req.params
         const comments = await Comment.find({entry}).populate({
+            path: 'author',
+            select: 'userName profileImg'
+        }).populate({
             path: 'likes',
             select: 'userName'
         })
@@ -26,10 +29,14 @@ const fetchComments = async (req, res) =>{
 
 const createComment = async (req, res) =>{
     try{
-        const {id} = req.params
-        const {content} = req.body
+       
         
-        const author = await User.findById(req._id)
+        const {content, authorId} = req.body
+        const {id} = req.params
+        
+        
+        const author = await User.findById(authorId)
+       
         const entry = await Entry.findById(id)
 
         if(!entry){
@@ -44,8 +51,15 @@ const createComment = async (req, res) =>{
                 message: 'No matching user'
             })
         }
-       const newComment = await Comment.create({entry: entry._id, content, author: req._id})
-       await User.findByIdAndUpdate(req._id,
+
+        
+       const newComment = await Comment.create({entry: entry._id, content, author: authorId})
+       const populatedComment = await Comment.findById(newComment._id)
+  .populate({
+    path: 'author',
+    select: 'userName profileImg'
+  });
+       await User.findByIdAndUpdate(authorId,
         {$inc: {balance: .5}},
         {new: true}
        )
@@ -53,7 +67,8 @@ const createComment = async (req, res) =>{
         await entry.save()
         res.json({
             status: 'SUCCESS',
-            message: 'Comment has been created! You earned half a buckaroo!'
+            message: 'Comment has been created! You earned half a buckaroo!',
+            data: populatedComment
         })
     }catch(error){
         res.status(500).json({

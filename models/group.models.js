@@ -26,7 +26,11 @@ announce:{
         type: Number,
         default: 0},
     GroupImg: String,
-    price: Number
+    price: Number,
+    firstTime: {
+        type: Boolean,
+        default: true
+    }
 }, {toJSON: {virtuals: true}, toObject: {virtuals: true}})
 
 groupSchema.virtual('members', {
