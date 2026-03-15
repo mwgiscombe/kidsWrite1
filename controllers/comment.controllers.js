@@ -6,9 +6,12 @@ const fetchComments = async (req, res) =>{
     try{
         const {entry} = req.params
         const comments = await Comment.find({entry}).populate({
+<<<<<<< HEAD
             path: 'author',
             select: 'userName profileImg'
         }).populate({
+=======
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
             path: 'likes',
             select: 'userName'
         })
@@ -29,6 +32,7 @@ const fetchComments = async (req, res) =>{
 
 const createComment = async (req, res) =>{
     try{
+<<<<<<< HEAD
        
         
         const {content, authorId} = req.body
@@ -37,6 +41,12 @@ const createComment = async (req, res) =>{
         
         const author = await User.findById(authorId)
        
+=======
+        const {id} = req.params
+        const {content, authorId} = req.body
+        
+        const author = await User.findById(authorId)
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         const entry = await Entry.findById(id)
 
         if(!entry){
@@ -51,6 +61,7 @@ const createComment = async (req, res) =>{
                 message: 'No matching user'
             })
         }
+<<<<<<< HEAD
 
         
        const newComment = await Comment.create({entry: entry._id, content, author: authorId})
@@ -59,6 +70,9 @@ const createComment = async (req, res) =>{
     path: 'author',
     select: 'userName profileImg'
   });
+=======
+       const newComment = await Comment.create({entry: entry._id, content, author: author._id})
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
        await User.findByIdAndUpdate(authorId,
         {$inc: {balance: .5}},
         {new: true}
@@ -67,8 +81,12 @@ const createComment = async (req, res) =>{
         await entry.save()
         res.json({
             status: 'SUCCESS',
+<<<<<<< HEAD
             message: 'Comment has been created! You earned half a buckaroo!',
             data: populatedComment
+=======
+            message: 'Comment has been created! You earned half a buckaroo!'
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         })
     }catch(error){
         res.status(500).json({
@@ -87,7 +105,11 @@ const updateComment = async (req, res) =>{
         await Entry.findByIdAndUpdate(id, {title, content})
         res.json({
             status: 'SUCCESS',
+<<<<<<< HEAD
             message: 'Comment has been updated!'
+=======
+            message: 'Entry has been updated!'
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         })
     }catch(error){
         res.status(500).json({
@@ -102,7 +124,10 @@ const deleteComment = async (req, res) =>{
         const {id} = req.params
         
         
+<<<<<<< HEAD
         
+=======
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         await Comment.findByIdAndDelete(id)
         res.json({
             status: 'SUCCESS',
@@ -111,7 +136,11 @@ const deleteComment = async (req, res) =>{
     }catch(error){
         res.status(500).json({
             status: 'FAILED',
+<<<<<<< HEAD
             message: 'Can not delete comment', error
+=======
+            message: 'Can not delete entry', error
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         })
     }
 }

@@ -1,9 +1,13 @@
 const User = require('../models/user.models')
 const Group = require('../models/group.models')
+<<<<<<< HEAD
 const Notification= require('../models/notification.models')
 const Entry = require('../models/entry.models')
 const jwt = require('jsonwebtoken')
 const bcrypt= require('bcrypt')
+=======
+const Entry = require('../models/entry.models')
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
 
 const fetchUsers = async (req, res) =>{
     try{
@@ -25,7 +29,11 @@ const fetchUsers = async (req, res) =>{
           ]
         })
         const formatted = users.map(user => ({ ...user.toObject(), profileImg: process.env.BASE_URL  + user.profileImg }))
+<<<<<<< HEAD
         // const finalUsers = formatted.map(user=>`Name: ${user.name} | userName: ${user.userName} | Group: ${user.group.name}| parentEmail: ${user.parentEmail} | Age: ${user.age} | Current Balance: ${user.balance} | ${user.entries.map(e=> e.title)}`)
+=======
+        const finalUsers = formatted.map(user=>`Name: ${user.name} | userName: ${user.userName} | Group: ${user.group.name}| parentEmail: ${user.parentEmail} | Age: ${user.age} | Current Balance: ${user.balance} | ${user.entries.map(e=> e.title)}`)
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         res.json({
             status: 'SUCCESS',
             data: formatted
@@ -34,12 +42,17 @@ const fetchUsers = async (req, res) =>{
     } catch(error){
         res.status(500).json({
             status: 'FAILED',
+<<<<<<< HEAD
             message: 'nope.',
             error: error.message
+=======
+            message: 'nope.'
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         })
     }
 }
 
+<<<<<<< HEAD
 const fetchUser = async (req, res) =>{
     try{
 const user = await User.findById(req.params.id).populate({
@@ -83,6 +96,8 @@ const user = await User.findById(req.params.id).populate({
 }
 }
 
+=======
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
 const searchUsers = async (req, res) =>{
     try{
         const {search, parentEmail, group} = req.body
@@ -120,8 +135,13 @@ const searchUsers = async (req, res) =>{
 
 const userDashboard = async (req, res) =>{
     try{
+<<<<<<< HEAD
         // const {id} = req._id
         const user = await User.findById(req._id).populate('group').populate({
+=======
+        const {id} = req.params
+        const user = await User.findById(id).populate('group').populate({
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
             path: 'entries',
             populate: [
                 {
@@ -138,8 +158,11 @@ const userDashboard = async (req, res) =>{
                 }
             ]
         })
+<<<<<<< HEAD
         const notifications = await Notification.find({ recipientId: req._id })
         .populate('senderId', 'userName')
+=======
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         const userEntries = user.entries.map(entry =>
             `<li>${entry.title}: 
                 <ul>
@@ -153,6 +176,7 @@ const userDashboard = async (req, res) =>{
                 </ul>
             </li>`
         )
+<<<<<<< HEAD
         const notificationList = notifications.length > 0
             ? notifications.map(n =>
                 `<li>${n.senderId.userName} made a new entry</li>`
@@ -168,6 +192,13 @@ const userDashboard = async (req, res) =>{
            ${notificationList}
            <h4> Your Entries:</h4>
             ${userEntries}
+=======
+        const userGroup = user.group
+        res.send(`<h1>Welcome ${user.name}!</h1>
+            <h4>Your Group: ${userGroup.name}</h4>
+            <h5>Current Balance: $${user.balance} Buckaroos</h5>
+            Your Entries:${userEntries}
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
             `)
 
     } catch(error){
@@ -179,6 +210,7 @@ const userDashboard = async (req, res) =>{
     }
 }
 
+<<<<<<< HEAD
 const UserPublicProfile = async (req, res) =>{
     try{
         const user = await User.findById(req.params.id).populate({
@@ -279,11 +311,20 @@ const createUser = async (req, res)=>{
         // }
         const encryptedPassword = await bcrypt.hash(password, 10)
 
+=======
+const createUser = async (req, res)=>{
+    try{        
+        const {name, userName, parentEmail, age, group, bio} = req.body
+        
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         const userData = {
             name, 
             userName, 
             parentEmail, 
+<<<<<<< HEAD
             password: encryptedPassword,
+=======
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
             age, 
             bio, 
             group
@@ -292,6 +333,7 @@ const createUser = async (req, res)=>{
         if (req.file) {
             userData.profileImg = `/uploads/users/${req.file.filename}`
         }
+<<<<<<< HEAD
 
      
         const enrolledGroup = await Group.findById(group)
@@ -308,6 +350,18 @@ const createUser = async (req, res)=>{
         message: 'Sorry, this group is full'
     })
 }
+=======
+        const enrolledGroup = await Group.findById(group)
+        if(group){
+            
+            if(enrolledGroup.enrolled >= enrolledGroup.spots){
+                return res.status(401).json({
+                    status: 'FAILED',
+                    message: 'Sorry, this group is full'
+                })
+            }
+        }
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         
         await User.create(userData)
         enrolledGroup.enrolled +=1
@@ -329,12 +383,20 @@ const createUser = async (req, res)=>{
     }
 }
 
+<<<<<<< HEAD
 
 const updateUser = async (req, res) =>{
     try{
         const {id} = req.params
         const {name, parentEmail, age, bio, userName, profileImg} = req.body
         await User.findByIdAndUpdate(id, {name, parentEmail, age, bio, userName, profileImg})
+=======
+const updateUser = async (req, res) =>{
+    try{
+        const {id} = req.params
+        const {name, parentEmail, age} = req.body
+        await User.findByIdAndUpdate(id, {name, parentEmail, age})
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         res.json({
             status: 'SUCCESS',
             message: 'User has been updated!'
@@ -348,6 +410,7 @@ const updateUser = async (req, res) =>{
     }
 }
 
+<<<<<<< HEAD
 const updateGroupUser = async (req, res) =>{
     try{
         const {id} = req.params
@@ -474,6 +537,29 @@ const deleteUser = async (req, res) => {
             status: "FAILED",
             message: error.message
         })
+=======
+const deleteUser = async (req, res) => {
+   try{ 
+    const {id} = req.params
+    const user = await User.findById(id)
+    const enrolledGroup = await Group.findById(user.group)
+    enrolledGroup.enrolled -= 1
+    enrolledGroup.save()
+
+    await Entry.deleteMany({author:user})
+      
+    await User.findByIdAndDelete(id)
+    res.json({
+        status: 'SUCCESS',
+        message: 'User and user entries deleted'
+    })
+    }catch(error){
+        res.status(500).json({
+        status: 'FAILED',
+        message: 'They will not go away!',
+        error: error.message
+    })
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
     }
 }
 const deleteAllUsers = async (req, res) => {
@@ -498,17 +584,23 @@ const deleteAllUsers = async (req, res) => {
 
 module.exports ={
     fetchUsers,
+<<<<<<< HEAD
     fetchUser,
+=======
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
     searchUsers,
     userDashboard,
     createUser,
     updateUser,
+<<<<<<< HEAD
     updateGroupUser,
     getCurrentUser,
     UserPublicProfile,
     loginUser,
     logoutUser,
     forgotPassword,
+=======
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
     deleteUser,
     deleteAllUsers
 }

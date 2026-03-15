@@ -1,12 +1,16 @@
 const Entry = require('../models/entry.models')
 const User = require('../models/user.models')
 const Comment = require('../models/comment.models')
+<<<<<<< HEAD
 const Notification = require('../models/notification.models')
 const Group = require('../models/group.models')
+=======
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
 
 const fetchEntries = async (req, res) =>{
     try{
         
+<<<<<<< HEAD
         const entries = await Entry.find()
   .populate({
     path: 'author',
@@ -23,6 +27,22 @@ const fetchEntries = async (req, res) =>{
       select: 'userName profileImg'
     }
   });
+=======
+        const entries = await Entry.find().populate('author', 'name userName').populate('likes', 'name userName').populate({
+            path: 'comments',
+            select: 'content author createdAt',
+            populate:{
+                path: 'author',
+                select: 'name userName', 
+                 
+            },
+            populate:{
+                path: 'likes',
+                select: 'name userName'
+            }
+            
+        })
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         res.json({
             status: 'SUCCESS',
             data: entries
@@ -65,16 +85,22 @@ const searchEntries = async (req, res) =>{
 
 const createEntry = async (req, res) =>{
     try{
+<<<<<<< HEAD
         const {title, content, public} = req.body
         const author = req._id
         const user = await User.findById(author)
         
+=======
+        const {title, content, author} = req.body
+        const user = await User.findById(author)
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         if(!user){
             return res.status(400).json({
                 status: 'FAILED',
                 message: 'User not found'
             })
         }
+<<<<<<< HEAD
         await Entry.create({title, content, author, public})
        const updatedUser = await User.findByIdAndUpdate(author,
         {$inc: {balance: 7}},
@@ -96,6 +122,12 @@ const createEntry = async (req, res) =>{
       
       await Notification.insertMany(notifications)
       
+=======
+        await Entry.create({title, content, author})
+       const updatedUser = await User.findByIdAndUpdate(author,
+        {$inc: {balance: 7}},
+    {new: true})
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         res.json({
             status: 'SUCCESS',
             message: 'Entry has been created! You earned 7 Buckaroos!',
@@ -131,8 +163,11 @@ const updateEntry = async (req, res) =>{
 const deleteEntry = async (req, res) =>{
     try{
         const {id} = req.params
+<<<<<<< HEAD
       
         
+=======
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         
         
         await Entry.findByIdAndDelete(id)
@@ -151,7 +186,11 @@ const deleteEntry = async (req, res) =>{
 const toggleLikeEntry = async (req, res) =>{
   try{
     const  {id} = req.params
+<<<<<<< HEAD
     const currentUser = req._id
+=======
+    const currentUser = req.body.currentUser
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
     
   const entry = await Entry.findById(id)
   const user = await User.findById(currentUser)

@@ -1,7 +1,10 @@
 const Group = require('../models/group.models')
 const User = require('../models/user.models')
+<<<<<<< HEAD
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
+=======
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
 
 const fetchGroups = async (req, res) =>{
     try{
@@ -48,10 +51,15 @@ const searchGroups = async (req, res) =>{
 
 const groupDashboard = async (req, res) =>{
     try{
+<<<<<<< HEAD
          
           
             
         const group = await Group.findById(req._id).populate({
+=======
+        const {id} = req.params
+        const group = await Group.findById(id).populate({
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
             path: 'members',
             populate:{
                 path: 'entries',
@@ -59,6 +67,7 @@ const groupDashboard = async (req, res) =>{
             }
           
         })
+<<<<<<< HEAD
 
         if(!group){
             return res.status(404).json({
@@ -66,6 +75,8 @@ const groupDashboard = async (req, res) =>{
                 message: 'group not found'
             })
         }
+=======
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         const groupMembers = group.members.map(member=>`<li>Member Name: ${member.name}: <ul><li>Username: ${member.userName}</li><li>Age: ${member.age}</li><li>Current Balance: $${member.balance} Buckaroos</li><li>Number of posts: ${member.entries.length}</li></ul></li>`)
         
         res.send(`<h1>Welcome ${group.name}!</h1>
@@ -77,17 +88,25 @@ const groupDashboard = async (req, res) =>{
         res.status(500).json({
             status: 'FAILED',
             message: 'nope.',
+<<<<<<< HEAD
            
+=======
+            error: error.message
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         })
     }
 }
 
 const createGroup = async (req, res)=>{
     try{
+<<<<<<< HEAD
         console.log("BODY:", req.body);
         console.log("FILE:", req.file);
         const {name, email, password, spots}= req.body
         const GroupImg = req.file ? req.file.path : null;
+=======
+        const {name, email, spots}= req.body
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         function calculatePrice(spots){
             let pricePer = 0
             if(spots<10){
@@ -109,6 +128,7 @@ const createGroup = async (req, res)=>{
 
         }
         const price = calculatePrice(spots)
+<<<<<<< HEAD
         // if(confirm != password){
         //     return res.status(401).json({
         //         status: 'FAILED',
@@ -119,6 +139,9 @@ const createGroup = async (req, res)=>{
         console.log("GroupImg value being saved:", GroupImg)
         await Group.create({name, email, spots, password: encryptedPassword, price, GroupImg})
        
+=======
+        await Group.create({name, email, spots, price})
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
    
         res.json({
             status: 'SUCCESS!',
@@ -135,6 +158,7 @@ const createGroup = async (req, res)=>{
     }
 }
 
+<<<<<<< HEAD
 const loginGroup = async (req, res)=>{
     const {email, password} = req.body
     const group = await Group.findOne({email}).populate('members', 'name userName age _id')
@@ -236,6 +260,13 @@ const updateGroup = async (req, res) =>{
         const {id} = req.params
         const updates = req.body
         await Group.findByIdAndUpdate(id, updates)
+=======
+const updateGroup = async (req, res) =>{
+    try{
+        const {id} = req.params
+        const {name} = req.body
+        await Group.findByIdAndUpdate(id, {name})
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
         res.json({
             status: 'SUCCESS',
             message: 'Group has been updated!'
@@ -261,10 +292,16 @@ const deleteGroup = async (req, res) => {
         })
     }
    
+<<<<<<< HEAD
     let defaultGroup = await Group.findOne({name: 'Default Group'})
     if(!defaultGroup){
         const newpwd= await bcrypt.hash('default123', 10)
         defaultGroup = await Group.create({name:'Default Group', email:'No Email Needed', password: newpwd, spots: 9999999, enrolled: 0})
+=======
+    const defaultGroup = await Group.findOne({name: 'Default Group'})
+    if(!defaultGroup){
+        await Group.create({name:'Default Group', email:'No Email Needed', spots: 9999999, enrolled: 0})
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
     }
 
     const usersToMove = await User.updateMany(
@@ -297,7 +334,11 @@ const deleteAllGroups = async (req, res) => {
     try{ 
      
      await Group.deleteMany()
+<<<<<<< HEAD
      await Group.create({name:'Default Group', password: 'default123', email:'No Email Needed'})
+=======
+     await Group.create({name:'Default Group', email:'No Email Needed'})
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
      res.json({
          status: 'SUCCESS',
          message: 'Groups deleted. Default Group Created'
@@ -315,11 +356,15 @@ module.exports ={
     fetchGroups,
     searchGroups,
     groupDashboard,
+<<<<<<< HEAD
     groupMessage,
     createGroup,
     loginGroup,
     logoutGroup,
     getCurrentGroup,
+=======
+    createGroup,
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
     updateGroup,
     deleteGroup,
     deleteAllGroups

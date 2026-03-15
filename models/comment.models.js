@@ -11,7 +11,11 @@ const commentSchema = mongoose.Schema({
        content: {
         type: String,
         required: true,
+<<<<<<< HEAD
        
+=======
+        minLength: 5
+>>>>>>> 8f7b32d9e4dd190c99de033ad4e98e98d8f76fa2
     },
     author:{
         type: mongoose.Schema.Types.ObjectId,
